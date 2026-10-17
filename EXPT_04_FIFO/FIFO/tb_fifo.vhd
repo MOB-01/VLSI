@@ -1,0 +1,84 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_fifo is
+end tb_fifo;
+
+architecture Behavior of tb_fifo is
+
+    component main
+        Port (
+            d     : in  STD_LOGIC_VECTOR (3 downto 0);
+            enq   : in  STD_LOGIC;
+            deq   : in  STD_LOGIC;
+            rst   : in  STD_LOGIC;
+            clk   : in  STD_LOGIC;
+            q     : out STD_LOGIC_VECTOR (3 downto 0);
+            full  : out STD_LOGIC;
+            empty : out STD_LOGIC
+        );
+    end component;
+
+    -- Testbench Signals
+    signal d     : std_logic_vector(3 downto 0) := (others => '0');
+    signal enq   : std_logic := '0';
+    signal deq   : std_logic := '0';
+    signal clk   : std_logic := '0';
+    signal rst   : std_logic := '0';
+    signal q     : std_logic_vector(3 downto 0);
+    signal full  : std_logic;
+    signal empty : std_logic;
+
+    constant clk_period : time := 20 ns;
+
+begin
+
+    -- Instantiate Unit Under Test (UUT)
+    uut: main PORT MAP (
+        d     => d,
+        enq   => enq,
+        deq   => deq,
+        rst   => rst,
+        clk   => clk,
+        q     => q,
+        full  => full,
+        empty => empty
+    );
+
+-- Bounded Clock Generation Process
+    clk_process : process
+    begin
+        clk <= '0';
+        wait for clk_period / 2;
+        clk <= '1';
+        wait for clk_period / 2;
+    end process;
+	 
+    -- Stimulus Process
+    stim_proc: process
+    begin
+        -- Apply Reset
+        rst <= '1';
+        wait for 20 ns;
+        rst <= '0';
+
+        -- ENQUEUE Phase (Enqueue 4 data elements into memory)
+        enq <= '1';
+        d <= "1000"; wait for 20 ns;
+        d <= "1001"; wait for 20 ns;
+        d <= "1110"; wait for 20 ns;
+        d <= "1010"; wait for 20 ns;
+
+        -- Pause Enqueue
+        enq <= '0';
+        wait for 30 ns;
+
+        -- DEQUEUE Phase (Read out stored elements in First-In First-Out order)
+        deq <= '1';
+        wait for 100 ns;
+
+        deq <= '0';
+        wait;
+    end process;
+
+end Behavior;
